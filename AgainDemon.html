@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html>
+    <head>
+            <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <style>
+            
+            canvas {
+				overflow: hidden;
+                position: fixed;
+                top: 0;
+                left: 0;
+                height: 100vh;
+                width: 100vw;
+                background-color: #F0F0F0;
+				transition: background-color 0.2s;
+            }
+
+            body {
+                margin: 0;
+                border: 5vw solid #F0F0F0;
+				overflow: hidden;
+				user-select: none;
+				-moz-user-select: none;
+				-o-user-select: none;
+				-webkit-user-select: none;
+				font-family: Helvetica;
+            }
+
+            body:hover {
+                cursor: none;
+            }
+
+            h1 {
+                color: #363636;
+                font-size: 5vw;
+                top: 5vh;
+				right: 10vw;
+                position: fixed;
+                z-index: 99;
+                display: inline-block;
+                font-family: Helvetica;
+            }
+
+            p {
+                position: fixed;
+                z-index: 100;
+                padding: 0.5vw;
+				width: 3.5vw;
+                background: #F4F4F4;
+				border: 1px solid #4A4A4A;
+                transform: translate(0vw, 70vh);
+				top: 5px;
+				border-radius: 10%;
+				transition: left 0.09s;
+            }
+			
+			.cursorPointer {
+				width: 0;
+				height: 0;
+				padding: 0.01vw;
+				border: 2px solid #414141;
+				transform: translate(0.1vw, -3vh);
+				position: fixed;
+				z-index: 105;
+				transition: left 0.08s, top 0.08s, border-radius 0.2s, padding 0.2s;
+				border-radius: 50%;
+			}
+
+            @keyframes rotate {
+                0% {transform: translate(-1vw, -5vh) rotate(0deg);}
+                100% {transform: translate(-1vw, -5vh) rotate(360deg);}
+            }
+
+			.moveDot {
+				left: 500px;
+				top: -200px;
+				padding: 7px;
+				position: absolute;
+				z-index: 99;
+				background-color: #F3F3F3;
+				border-radius: 50%;
+				border: 1px solid #3E3E3E;
+			}
+			
+			.playButton {
+				color: #575757;
+				font-size: 10vh;
+				transform: translate(30vw, 60vh);
+				background-color: #E3E3E3;
+				font-weight: bold;
+				padding: 1vw;
+				display: inline-block;
+				border: 1px solid #6E6E6E;
+				border-radius: 5%;
+				max-width: 25vw;
+				max-height: 30vh;
+				transition: background-color 0.2s;
+			}
+			
+			.playButton:hover {
+				background-color: #F1F1F1;
+			}
+			
+			audio {
+				display: none;
+			}
+			
+			#tip {
+				top: 5vh; 
+				width: 83vw;
+				left: 4vw;
+				text-align: right;
+				border-bottom: 2px solid #373737;
+				padding-right: 7vw;
+				font-size: 4vh;
+			}
+			
+			.endScreen {
+				visibility: hidden;
+				opacity: 0;
+				position: fixed;
+				top: 0;
+				left: 4vw;
+				z-index: 103;
+				width: 90vw;
+				height: 90vh;
+				transition: opacity 0.5s;
+				border-bottom: 2px solid #373737;
+			}
+			
+        </style>
+    </head>
+    <body onmousemove="showPosition(event)">
+		
+		<center><h1></h1></center>
+        <p class="dot"></p>
+		<div class="moveDot"></div>
+        <p class="cursorPointer"></p>
+        <canvas></canvas>
+		<center>
+			<div class="endScreen">
+				<h1 id="tip">Tip: Don't mess up</h1>
+				<h1 style="opacity: 1;
+						   			transform: translate(0vw, 0vh);
+						   			top: 30vh;
+						   			transition: opacity 0.5s;" class="scoreIcon">Final score: 0</h1>
+				<div class="playButton" 
+					 	onclick="window.location.reload();"
+					 	onmouseover="hoverEffect()" 
+						onmouseout="closeEffect()">Again</div>
+				
+				<div class="playButton" 
+					 	onclick="relocate('AgainGame.html');"
+					 	onmouseover="hoverEffect()" 
+						onmouseout="closeEffect()"
+					 	style="transform: translate(-5vw, 60vh);">Home</div>
+			</div>
+		</center>
+    </body>
+    <footer>
+        <script>
+			var canRun = true;
+			if (localStorage.getItem("demonDifficulty") === null) {
+				document.clear();
+				document.body.innerHTML = "<center><h3 style='font-family: Helvetica; font-size: 8vh; color: #494949;'>You need 13000 points in hard to unlock this!</h3></center>";
+				document.documentElement.innerHTML = "<center><h3 style='font-family: Helvetica; font-size: 8vh; color: #494949;'>You need 13000 points in hard to unlock this!</h3></center>";
+				canRun = false;
+			}
+if (canRun == true) {
+
+			var points = 0;
+			var playing = false;
+			setTimeout(function() {
+				playing = true;
+			}, 500);
+var barHeight = "0vh";
+var barTwoHeight = "0vw";
+var blockSize = "1vw";
+
+//Credits: https://jsfiddle.net/Dwaaren/j9zahaLL/
+function vwTOpx(value, variable) {
+    var w = window,
+      d = document,
+      e = d.documentElement,
+      g = d.getElementsByTagName('body')[0],
+      x = w.innerWidth || e.clientWidth || g.clientWidth,
+      y = w.innerHeight|| e.clientHeight|| g.clientHeight;
+
+    var result = (x*value)/100;
+    variable = result;
+    return result;
+  }
+
+function vhTOpx(value, variable) {
+    var w = window,
+      d = document,
+      e = d.documentElement,
+      g = d.getElementsByTagName('body')[0],
+      x = w.innerWidth || e.clientWidth || g.clientWidth,
+      y = w.innerHeight|| e.clientHeight|| g.clientHeight;
+
+    var result = (y*value)/100;
+    variable = result+"px";
+    return result;
+  }
+			
+function pxTOvw(value, variable) {
+  var w = window,
+    d = document,
+    e = d.documentElement,
+    g = d.getElementsByTagName('body')[0],
+    x = w.innerWidth || e.clientWidth || g.clientWidth,
+    y = w.innerHeight|| e.clientHeight|| g.clientHeight;
+
+  var result = (100*value)/x;
+  variable = result+"px";
+  return result;
+}
+
+
+            window.addEventListener("keypress", function(key) {
+                if (key.which == 32) {
+                    window.location.reload();
+                }
+            });
+            var mousePos = 0;
+            function showPosition(event) {
+                var posX = event.clientX;
+                var posY = event.clientY;
+                var canvas = document.getElementsByTagName("canvas");
+                var dot = document.getElementsByClassName("dot");
+				var movingDot = document.getElementsByClassName("moveDot");
+				var pointer = document.getElementsByClassName("cursorPointer");
+
+                dot[0].style.left = (posX - 50)/1.01+"px";
+                dot[0].style.top = 5+"px";
+				pointer[0].style.left = posX+"px";
+                pointer[0].style.top = posY+"px";
+                mousePos = posX;
+            }
+			
+			
+				var dotSpeedX = 500;
+			var rndmSpeed =  Math.floor(Math.random() * (8 - 0 + 1) ) + 0;
+				var dotSpeedY = -100;
+				var goingDown = true;
+			
+			setInterval(function() {
+				if (playing == true) {
+				var movingDot = document.getElementsByClassName("moveDot");
+                var dot = document.getElementsByClassName("dot");
+                var posX = movingDot[0].style.left;
+                var posY = movingDot[0].style.top;
+				var dotPositionX = dot[0].style.left;
+				var dotPositionY = dot[0].style.top;
+				var screenX = screen.height/2;
+				var screenY = screen.height;
+                screenY += vhTOpx(70, barHeight);
+
+
+                if (goingDown == true) {
+                     dotSpeedY += 10;
+					 dotSpeedX += rndmSpeed;
+                }
+
+                var rect1 = dot[0].getBoundingClientRect();
+                var rect2 = movingDot[0].getBoundingClientRect();
+
+                var overlap = !(rect1.right < rect2.left || 
+                rect1.left > rect2.right || 
+                rect1.bottom - 25 < rect2.top || 
+                rect1.top - 6 > rect2.bottom)
+
+                if (overlap == true) {
+                    goingDown = false;
+						rndmSpeed = Math.floor(Math.random() * (8 - -8 + 1) ) + -8;
+                     	dotSpeedX += rndmSpeed;
+					
+					if (dotSpeedX > screen.width/2+"px") {
+						alert(screen.width+"px");
+						rdmSpeed = Math.floor(Math.random() * (0 - -8 + 1) ) + -5;
+					}
+                }
+				
+				if (goingDown == false) {
+					dotSpeedY += -10;
+					dotSpeedX += rndmSpeed;
+				}
+				
+				
+var canvas = document.getElementsByTagName("canvas");
+				if (dotSpeedX < canvas[0].width*-15 + 20) {
+					rndmSpeed = 5;
+				}
+				
+				if (dotSpeedX > screen.width - 20) {
+					rndmSpeed = -5;
+				}
+				
+				if (dotSpeedX < 0) {
+					rndmSpeed = 5;
+				}
+            
+            
+                if (movingDot[0].style.top < barHeight) {
+                    goingDown = false;
+                }
+                if (goingDown == false && movingDot[0].style.top < barTwoHeight) {
+                    goingDown = true;
+						rndmSpeed = Math.floor(Math.random() * (5 - 0 + 1) ) + 0;
+                }
+				
+				if (dotSpeedX < screenX-"20vw") {
+					rndmSpeed = 5;
+					dotSpeedX = 0;
+				}
+				
+				if (dotSpeedY > screenY/1.8) {//End screen
+					document.getElementsByTagName("canvas")[0].style.zIndex = 103;
+					document.getElementsByTagName("canvas")[0].style.backgroundColor = "#E3E3E3";
+					document.getElementsByClassName("endScreen")[0].style.opacity = "1";
+					document.getElementsByClassName("endScreen")[0].style.visibility = "visible";
+					playing = false;
+					document.getElementsByClassName("scoreIcon")[0].innerHTML = "Final Score: " + points;
+					
+						//Tip randomizer
+						var whichTip = Math.floor(Math.random() * (12 - 0 + 1) ) + 0;
+						var tip = document.getElementById("tip");
+						var tips = ["Tip: Don't mess up",
+										"Tip: Try to keep the ball above the bottom",
+										"Tip: Press space when you mess up", 
+										"Tip: Try a bit harder",
+										"Tip: Watch the walls, as a bounce shot can ruin your high score",
+								 		"Tip: If this mode seems too dificult for you, go to easy to practice",
+										"Tip: If you aren't already, use a mouse to make the game easier for you",
+										"Fun fact: This game was made in just 2 days",
+										"Fun fact: I didn't originally intent for this to become a game",
+										"Fun fact: There are now 6 fun facts, including this one",
+										"You aren't quite trying hard enough. Try harder",
+										"Fun fact: There are 14 total facts"];
+						var tipText = tips[whichTip];
+						tip.innerHTML = tipText;
+					
+						if (points < 300) {
+							tip.innerHTML = "Tip: You should try an easier difficulty";
+						}
+					if (points > 15000) {
+						tip.innerHTML = "Well done! Check back at the home screen to play demon difficulty";
+						var canDo = true;
+						localStorage.setItem("demonDifficulty", canDo);
+					}
+					
+					if (tipText == "undefined" || tipText == undefined) {
+						tip.innerHTML = "Fun fact: This is the final fun fact, and only shows up if the computer can't fetch a fun fact.";
+					}
+				}
+				
+				var sWidth = vwTOpx(100, sWidth);
+				if (dotSpeedX > sWidth+"px") {
+					alert("Hey");
+					rndmSpeed = 5;
+					dotSpeedX = 0;
+				}
+				}
+			}, 10);
+
+            setInterval(function() {
+				if (playing == true) {
+				var movingDot = document.getElementsByClassName("moveDot");
+
+                movingDot[0].style.left = dotSpeedX+"px";
+				movingDot[0].style.top = dotSpeedY+"px";
+				}
+            }, 5);
+			
+			setInterval(function() {
+				if (playing == true) {
+					points++;
+					points++;
+					document.getElementsByTagName("h1")[0].innerHTML = points;
+				}
+			}, 1);
+
+			
+			function hoverEffect() {
+				var cursor = document.getElementsByClassName("cursorPointer");
+				
+				cursor[0].style.padding = "0.2vw";
+				cursor[0].style.border = "0.5vw solid #414141;"
+				cursor[0].style.background = "transparent";
+				cursor[0].style.borderRadius = "30%";
+			}
+			
+			function closeEffect() {
+				var cursor = document.getElementsByClassName("cursorPointer");
+				
+				cursor[0].style.padding = "0vw";
+				cursor[0].style.border = "2px solid #414141;"
+				cursor[0].style.borderRadius = "50%";
+			}
+			
+			function relocate(location) {
+				window.location.href = location;
+			}
+}
+        </script>
+    </footer>
+</html>

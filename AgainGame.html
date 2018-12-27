@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html  onmousemove="moveMouse(event)">
+	<head>
+		<style>
+			body {
+				background-color: #F7F7F7;
+				margin: 0;
+				color: #626262;
+				font-weight: bold;
+				overflow: hidden;
+				user-select: none;
+				-moz-user-select: none;
+				-o-user-select: none;
+				-webkit-user-select: none;
+			}
+			
+			html {
+				cursor: none;
+			}
+			
+			.cursorPointer {
+				width: 0;
+				height: 0;
+				padding: 0.01vw;
+				border: 2px solid #414141;
+				transform: translate(0.5vw, -1vh);
+				position: fixed;
+				z-index: 105;
+				transition: left 0.05s, top 0.05s, border-radius 0.2s, padding 0.2s;
+				border-radius: 50%;
+			}
+			
+			.title {
+				top: 20vh;
+				font-size: 20vh;
+				font-weight: 1000;
+				font-family: Helvetica;
+				color: #5A5A5A;
+				opacity: 0;
+				transition: opacity 5s;
+			}
+				
+				p {
+                position: fixed;
+                z-index: 100;
+                padding: 0.5vw;
+				width: 7vw;
+                background: #F4F4F4;
+				border: 1px solid #4A4A4A;
+                transform: translate(0vw, 70vh);
+				top: 5px;
+				border-radius: 10%;
+				transition: left 0.09s;
+            }
+			
+			.button {
+				background-color: #FAFAFA;
+				border: 2px solid #616161;
+				padding: 3vw;
+				display: inline-block;
+				transition: opacity 2s, background-color 0.2s;
+				opacity: 0;
+				margin: -0.25vw;
+				margin-top: 20vh;
+				font-size: 2vw;
+				font-weight: 100;
+			}
+			
+			.button:hover {
+				background-color: #F0F0F0;
+			}
+			
+			.button:first-child {
+				border-radius: 10% 0 0 10%;
+			}
+			.button:last-child {
+				border-radius: 0 10% 10% 0;
+			}
+			
+			#demonBlock {
+				animation: demon 0.5s linear 1;
+			}
+			
+			@keyframes demon {
+				0% {width: 0vw;}
+				100% {width: 6.5vw;}
+			}
+			
+		</style>
+	</head>
+	<body onload="showIntro()">
+		<div class="cursorPointer"></div>
+		<center><h1 class="title">Again</h1></center>
+<center>
+  <div class="button" onmouseenter="hoverEffect()" onmouseout="closeEffect()" onclick="relocate('AgainEasy.html')">Easy</div>
+	
+  <div class="button" onmouseenter="hoverEffect()" onmouseout="closeEffect()"  onclick="relocate('AgainMedium.html')">Medium</div>
+	
+  <div class="button" onmouseenter="hoverEffect()" onmouseout="closeEffect()" onclick="relocate('AgainHard.html')" style="border-radius: 0 10% 10% 0;">Hard</div>
+	
+  <div class="button" onmouseenter="hoverEffect()" onmouseout="closeEffect()" onclick="relocate('AgainDemon.html')" style="display: none;" id="demonBlock">Demon</div>
+</center>
+	</body>
+	<footer>
+		<script>
+			document.addEventListener("keypress", function(key) {
+				if (key.which == 32) {
+					window.location.reload();
+				}
+			});
+			
+			function moveMouse(event) {
+                var posX = event.clientX;
+                var posY = event.clientY;
+				var mouse = document.getElementsByClassName("cursorPointer");
+				var pointer = document.getElementsByClassName("cursorPointer");
+
+				pointer[0].style.left = posX+"px";
+                pointer[0].style.top = posY+"px";
+			}
+			
+			function showIntro() {
+				var title = document.getElementsByClassName("title");
+				title[0].style.opacity = 1;
+				var button = document.getElementsByClassName("button");
+					setTimeout(function() {
+						button[0].style.opacity = 1;
+						button[1].style.opacity = 1;
+						button[2].style.opacity = 1;
+						button[3].style.opacity = 1;
+					}, 000);
+			}
+			
+			function relocate(location) {
+				window.location.href = location;
+			}
+			
+			function hoverEffect() {
+				var cursor = document.getElementsByClassName("cursorPointer");
+				
+				cursor[0].style.padding = "0.2vw";
+				cursor[0].style.border = "0.5vw solid #414141;"
+				cursor[0].style.background = "transparent";
+				cursor[0].style.borderRadius = "30%";
+			}
+			
+			function closeEffect() {
+				var cursor = document.getElementsByClassName("cursorPointer");
+				
+				cursor[0].style.padding = "0vw";
+				cursor[0].style.border = "2px solid #414141;"
+				cursor[0].style.borderRadius = "50%";
+			}
+			
+			if (localStorage.getItem("demonDifficulty") != null || undefined) {
+				var button = document.getElementsByClassName("button");
+				
+				button[2].style.borderRadius = "0";
+				button[3].style.display = "inline-block";
+			}
+			
+		</script>
+	</footer>
+</html>
